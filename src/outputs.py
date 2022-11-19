@@ -7,6 +7,7 @@ import logging
 
 def control_output(results, cli_args):
     output = cli_args.output
+
     if cli_args.pretty:
         pretty_output(results)
     elif output == 'file':

@@ -1,14 +1,15 @@
 import re
 import logging
+from collections import Counter
 from urllib.parse import urljoin
-from constants import BASE_DIR, MAIN_DOC_URL, MAIN_PEP_8
+from constants import BASE_DIR, MAIN_DOC_URL, MAIN_PEP_8, STATUS_DT
 from requests_cache import CachedSession
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from outputs import control_output
 
 from config import configure_argument_parser, configure_logging
-from utils import get_response, find_tag
+from utils import get_response, find_tag, clear_list, status_matching
 
 
 def whats_new():
@@ -105,20 +106,53 @@ def pep():
     # нашли все таблицы в section_pep_contant 10 таблиц.
     div_table_wrapper = section_pep_contant.find_all(
         'table', class_='pep-zero-table docutils align-default')
-    # print(div_table_wrapper[0])
-
+    # перебараем первую таблицу [:1]
+    counter_status = []
+    result = [('Статус', 'Количество')]
     for table in tqdm(div_table_wrapper, desc='Получаем ссылки PEP'):
         # нашли все строки таблиц.
         rows = table.find_all('tr')
         for link in rows:
             # находим первый тег а
-            link_pep = link.find('a')
-            if link_pep:
+            status = link.find('abbr')
+            href_pep = link.find('a')
+            if href_pep:
                 # получили из тега a, href создали ссылку.
-                href_pep = urljoin(MAIN_PEP_8, link_pep['href'])
+                if status:
+                    preview_status = status.text[1:]
+                else:
+                    preview_status = ''
+                # preview_type = status.text[0:1]
+                link_pep = urljoin(MAIN_PEP_8, href_pep['href'])
                 session = CachedSession()
-                response = session.get(href_pep)
-                print(response.status_code)
+                response = get_response(session, link_pep)
+                response.encoding = 'utf-8'
+                soup = BeautifulSoup(response.text, features='lxml')
+                section_main = find_tag(
+                    soup, 'section', {'id': 'pep-content'})
+                dl_list = list(find_tag(section_main, 'dl', {
+                               'class': 'rfc2822 field-list simple'}))
+                # Отчищаем список
+                clear_list(dl_list)
+
+                c = 0
+                for i in dl_list:
+                    if i.text == 'Status:':
+                        # print(dl_list[c+1].text)
+                        counter_status.append(dl_list[c+1].text)
+                        status_matching(dl_list[c+1].text, preview_status)
+                    c += 1
+
+    # print(result)
+    x = Counter(counter_status)
+    for i in x:
+        result.append(
+            (i, x[i])
+        )
+    result.append(
+        ('Total', sum(x.values()))
+    )
+    return result
 
 
 MODE_TO_FUNCTION = {
