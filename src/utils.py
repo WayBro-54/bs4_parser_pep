@@ -1,6 +1,6 @@
 import logging
 from requests import RequestException
-from exceptions import ParseFindTagException
+from exceptions import ParserFindTagException
 from constants import EXPECTED_STATUS
 
 
@@ -21,7 +21,7 @@ def find_tag(soup, tag, attrs=None):
     if searched_tag is None:
         error_msg = f'Не найден тег {tag} {attrs}'
         logging.error(error_msg, stack_info=True)
-        raise ParseFindTagException(error_msg)
+        raise ParserFindTagException(error_msg)
     return searched_tag
 
 
@@ -33,7 +33,10 @@ def clear_list(list_):
         n += 1
 
 
-def status_matching(dl_status, preview_status):
+def status_matching(dl_status, preview_status, link):
     if preview_status:
         if dl_status not in EXPECTED_STATUS[preview_status]:
-            logging.info('Ожидался статус')
+            logging.info(f'''Несовпадающие статусы:
+            {link}
+            Статус в карточке: {dl_status}
+            Ожидаемые статусы: {EXPECTED_STATUS[preview_status]}''')
