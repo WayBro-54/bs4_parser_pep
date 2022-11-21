@@ -1,3 +1,8 @@
+
+#!!!!!!!
+#  Не стал заменять все текстовые литералы, т.к. это лишнее присвоение с:
+#!!!!!!!
+
 import re
 import logging
 from collections import Counter
