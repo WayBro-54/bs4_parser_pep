@@ -7,6 +7,12 @@ WHATS_NEW_URL = urljoin(MAIN_DOC_URL, 'whatsnew/')
 DOWLANDS_URL = urljoin(MAIN_DOC_URL, 'download.html')
 MAIN_PEP_8 = 'https://peps.python.org/'
 DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
+LOG_DIR = BASE_DIR / 'logs'
+RESULT_DIR = 'results'
+TAG_SECTION = 'section'
+TAG_DIV = 'div'
+TAG_TABLE = 'table'
+
 
 EXPECTED_STATUS = {
     'A': ('Active', 'Accepted'),

@@ -1,5 +1,7 @@
 import logging
+
 from requests import RequestException
+
 from exceptions import ParserFindTagException
 from constants import EXPECTED_STATUS
 
@@ -8,10 +10,13 @@ def get_response(session, url):
     try:
         response = session.get(url)
         response.encoding = 'utf-8'
+        if response is None or response.status_code != 200:
+            return None
         return response
     except RequestException:
         logging.exception(
-            f'Возникла ошибка при загрузке страницы {url}',
+            (f'''Возникла ошибка при загрузке страницы {url},
+            Ответ сервера: {response.status_code}'''),
             stack_info=True
         )
 
